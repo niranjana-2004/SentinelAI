@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ML models and datasets
+models/
+datasets/
+data/raw/
+*.pt
+*.pth
+*.h5
+*.keras
+*.pkl
+*.joblib
+
+# Logs
+*.log
+logs/
+
+# Frontend dependencies and builds
+node_modules/
+frontend/dist/
+frontend/build/
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
