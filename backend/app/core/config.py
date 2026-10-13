@@ -37,9 +37,48 @@ class Settings(BaseSettings):
         description="Explicit allowed CORS origins",
     )
 
+    trivy_binary_path: str = Field(
+        default="trivy",
+        description="Path to Trivy executable or executable name in PATH",
+    )
+    trivy_cache_dir: str = Field(
+        default=r"D:\SentinelAI\.cache\trivy",
+        description="Directory for Trivy vulnerability database and artifact cache",
+    )
+    scan_timeout_seconds: int = Field(
+        default=120,
+        description="Execution timeout in seconds for scanner subprocess",
+    )
+    approved_scan_images: list[str] = Field(
+        default_factory=lambda: [
+            "python:3.12-slim",
+            "alpine:3.19",
+            "nginx:alpine",
+            "redis:alpine",
+        ],
+        description="Strict allowlist of approved container images permitted for scanning",
+    )
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: Union[str, list[str]]) -> list[str]:
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("[") and value.endswith("]"):
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except json.JSONDecodeError:
+                    pass
+            return [item.strip() for item in value.split(",") if item.strip()]
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        return []
+
+    @field_validator("approved_scan_images", mode="before")
+    @classmethod
+    def parse_approved_scan_images(cls, value: Union[str, list[str]]) -> list[str]:
         if isinstance(value, str):
             value = value.strip()
             if value.startswith("[") and value.endswith("]"):

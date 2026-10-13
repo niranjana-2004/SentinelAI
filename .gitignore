@@ -24,6 +24,10 @@ env/
 .coverage
 htmlcov/
 
+# Local scanner and tool cache
+.cache/
+cache/
+
 # ML models and datasets
 models/
 datasets/
