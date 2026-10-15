@@ -382,6 +382,43 @@ def test_parse_trivy_finding_includes_risk_details():
     finding = result.vulnerabilities[0]
 
     assert finding.risk_score == 9.0
+    
     assert finding.remediation_guidance == (
-        "Address immediately; prioritize a fix or mitigation."
+    "Address immediately; investigate mitigations and "
+    "monitor vendor advisories."
     )
+
+def test_parse_trivy_finding_includes_fixed_version_guidance():
+    import json
+
+    from backend.app.services.trivy_parser import parse_trivy_json
+
+    raw_output = json.dumps({
+        "Results": [
+            {
+                "Target": "test-image",
+                "Vulnerabilities": [
+                    {
+                        "VulnerabilityID": "CVE-2024-56789",
+                        "PkgName": "test-package",
+                        "InstalledVersion": "1.0",
+                        "FixedVersion": "1.2.13",
+                        "Severity": "CRITICAL",
+                    }
+                ],
+            }
+        ]
+    })
+
+    result = parse_trivy_json(
+        raw_output=raw_output,
+        scan_id="test-fixed-version",
+        target_image="test-image",
+        duration_seconds=1.0,
+    )
+
+    finding = result.vulnerabilities[0]
+
+    assert finding.fixed_version == "1.2.13"
+    assert "Upgrade to version 1.2.13." in finding.remediation_guidance
+    assert "Address immediately" in finding.remediation_guidance

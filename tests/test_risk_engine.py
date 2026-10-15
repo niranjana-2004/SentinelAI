@@ -155,15 +155,23 @@ def test_get_remediation_guidance():
         RiskPrioritizationEngine.get_remediation_guidance(
             SeverityLevel.CRITICAL
         )
-        == "Address immediately; prioritize a fix or mitigation."
+        == (
+            "Address immediately; investigate mitigations and "
+            "monitor vendor advisories."
+        )
     )
 
+    
     assert (
         RiskPrioritizationEngine.get_remediation_guidance(
             SeverityLevel.HIGH
         )
-        == "Remediate as a high priority."
+        == (
+            "Remediate as a high priority; "
+            "investigate available mitigations."
+        )
     )
+
 
     assert (
         RiskPrioritizationEngine.get_remediation_guidance(
@@ -185,3 +193,22 @@ def test_get_remediation_guidance():
         )
         == "Investigate the severity before prioritizing."
     )
+
+
+def test_remediation_guidance_includes_fixed_version():
+    guidance = RiskPrioritizationEngine.get_remediation_guidance(
+        SeverityLevel.CRITICAL,
+        fixed_version="1.2.13",
+    )
+
+    assert "Upgrade to version 1.2.13." in guidance
+    assert "Address immediately" in guidance
+
+def test_high_remediation_guidance_includes_fixed_version():
+    guidance = RiskPrioritizationEngine.get_remediation_guidance(
+        SeverityLevel.HIGH,
+        fixed_version="2.4.1",
+    )
+
+    assert "Upgrade to version 2.4.1." in guidance
+    assert "Remediate as a high priority" in guidance

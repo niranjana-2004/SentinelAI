@@ -109,9 +109,9 @@ def parse_trivy_json(
                 severity = normalize_severity(vuln.get("Severity"))
                 summary_counts[severity] += 1
 
-                fixed_ver = vuln.get("FixedVersion")
-                if fixed_ver is not None:
-                    fixed_ver = str(fixed_ver).strip() or None
+                fixed_version = vuln.get("FixedVersion")
+                if fixed_version is not None:
+                    fixed_version = str(fixed_version).strip() or None
 
                 title = vuln.get("Title")
                 if title is not None:
@@ -127,7 +127,10 @@ def parse_trivy_json(
 
                 risk_score = RiskPrioritizationEngine.get_severity_score(severity)
                 remediation_guidance = (
-                    RiskPrioritizationEngine.get_remediation_guidance(severity)
+                    RiskPrioritizationEngine.get_remediation_guidance(
+                        severity,
+                        fixed_version=fixed_version,
+                    )
                 )
 
                 vulnerabilities.append(
@@ -135,7 +138,7 @@ def parse_trivy_json(
                         vulnerability_id=vuln_id or "UNKNOWN-ID",
                         package_name=pkg_name or "unknown-package",
                         installed_version=installed_ver or "unknown",
-                        fixed_version=fixed_ver,
+                        fixed_version=fixed_version,
                         severity=severity,
                         risk_score=risk_score,
                         remediation_guidance=remediation_guidance,

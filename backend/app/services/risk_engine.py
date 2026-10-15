@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 from collections import defaultdict
 from backend.app.schemas.scans import SeverityLevel, VulnerabilityItem
 class RiskPrioritizationEngine:
@@ -41,34 +42,58 @@ class RiskPrioritizationEngine:
         reverse=True,
     )
 
+    
     @staticmethod
     def get_remediation_guidance(
         severity: SeverityLevel,
+        fixed_version: Optional[str] = None,
     ) -> str:
-        """Return initial remediation guidance based on severity."""
-
-        guidance = {
-        SeverityLevel.CRITICAL: (
-            "Address immediately; prioritize a fix or mitigation."
-        ),
-        SeverityLevel.HIGH: (
-            "Remediate as a high priority."
-        ),
-        SeverityLevel.MEDIUM: (
-            "Schedule remediation and assess exposure."
-        ),
-        SeverityLevel.LOW: (
-            "Address during routine maintenance."
-        ),
-        SeverityLevel.UNKNOWN: (
-            "Investigate the severity before prioritizing."
-        ),
-    }
+        """Return remediation guidance based on severity and fix availability."""
 
         if not isinstance(severity, SeverityLevel):
             raise ValueError("Unsupported severity level")
 
-        return guidance[severity]
+        if severity == SeverityLevel.CRITICAL:
+            if fixed_version:
+                return (
+                    "Address immediately; prioritize a fix or mitigation. "
+                    f"Upgrade to version {fixed_version}."
+                )
+            return (
+                "Address immediately; investigate mitigations and "
+                "monitor vendor advisories."
+            )
+
+        if severity == SeverityLevel.HIGH:
+            if fixed_version:
+                return (
+                    "Remediate as a high priority. "
+                    f"Upgrade to version {fixed_version}."
+                )
+            return (
+                "Remediate as a high priority; "
+                "investigate available mitigations."
+            )
+
+        guidance = {
+            SeverityLevel.MEDIUM: (
+                "Schedule remediation and assess exposure."
+            ),
+            SeverityLevel.LOW: (
+                "Address during routine maintenance."
+            ),
+            SeverityLevel.UNKNOWN: (
+                "Investigate the severity before prioritizing."
+            ),
+        }
+
+        message = guidance[severity]
+
+        if fixed_version:
+            message += f" Upgrade to version {fixed_version}."
+
+        return message
+
 
     @staticmethod
     def group_by_cve(
