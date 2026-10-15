@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
-
 class SeverityLevel(str, Enum):
     """Normalized vulnerability severity levels."""
 
@@ -29,6 +28,14 @@ class VulnerabilityItem(BaseModel):
     installed_version: str = Field(..., description="Installed package version detected in the image")
     fixed_version: Optional[str] = Field(None, description="Patched version resolving the vulnerability, if available")
     severity: SeverityLevel = Field(default=SeverityLevel.UNKNOWN, description="Normalized severity level")
+    risk_score: Optional[float] = Field(
+        None,
+        description="Calculated risk score for the vulnerability",
+    )
+    remediation_guidance: Optional[str] = Field(
+    None,
+    description="Recommended remediation action based on severity",
+)
     title: Optional[str] = Field(None, description="Short summary of the vulnerability")
     description: Optional[str] = Field(None, description="Detailed explanation of the security finding")
     primary_url: Optional[str] = Field(None, description="Reference link to official advisory or CVE entry")
@@ -42,10 +49,12 @@ class VulnerabilityItem(BaseModel):
                 "installed_version": "1:1.2.13.dfsg-1",
                 "fixed_version": "1:1.2.13.dfsg-1+deb12u1",
                 "severity": "CRITICAL",
+                "risk_score": 9.8,
+                "remediation_guidance": "Upgrade to version 1:1.2.13.dfsg-1+deb12u1",
                 "title": "zlib MiniZip buffer overflow",
                 "description": "MiniZip in zlib allows integer overflow and resultant buffer overflow.",
                 "primary_url": "https://avd.aquasec.com/nvd/cve-2023-45853",
-                "target": "python:3.12-slim (debian 12.5)",
+                "target": "python:3.12-slim (debian 12.5)"
             }
         }
     )

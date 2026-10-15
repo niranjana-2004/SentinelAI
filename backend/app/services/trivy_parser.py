@@ -10,6 +10,7 @@ from backend.app.schemas.scans import (
     VulnerabilityItem,
     VulnerabilitySummary,
 )
+from backend.app.services.risk_engine import RiskPrioritizationEngine
 
 logger = logging.getLogger("sentinelai.trivy_parser")
 
@@ -124,6 +125,11 @@ def parse_trivy_json(
                 if primary_url is not None:
                     primary_url = str(primary_url).strip() or None
 
+                risk_score = RiskPrioritizationEngine.get_severity_score(severity)
+                remediation_guidance = (
+                    RiskPrioritizationEngine.get_remediation_guidance(severity)
+                )
+
                 vulnerabilities.append(
                     VulnerabilityItem(
                         vulnerability_id=vuln_id or "UNKNOWN-ID",
@@ -131,6 +137,8 @@ def parse_trivy_json(
                         installed_version=installed_ver or "unknown",
                         fixed_version=fixed_ver,
                         severity=severity,
+                        risk_score=risk_score,
+                        remediation_guidance=remediation_guidance,
                         title=title,
                         description=description,
                         primary_url=primary_url,

@@ -350,3 +350,38 @@ def test_api_get_scan_not_found_returns_404(client: TestClient) -> None:
     response = client.get("/api/v1/scans/non-existent-scan-id")
     assert response.status_code == 404
     assert "not found" in response.json()["detail"]
+
+def test_parse_trivy_finding_includes_risk_details():
+    import json
+
+    from backend.app.services.trivy_parser import parse_trivy_json
+
+    raw_output = json.dumps({
+        "Results": [
+            {
+                "Target": "test-image",
+                "Vulnerabilities": [
+                    {
+                        "VulnerabilityID": "CVE-2024-12345",
+                        "PkgName": "test-package",
+                        "InstalledVersion": "1.0",
+                        "Severity": "CRITICAL",
+                    }
+                ],
+            }
+        ]
+    })
+
+    result = parse_trivy_json(
+        raw_output=raw_output,
+        scan_id="test-scan",
+        target_image="test-image",
+        duration_seconds=1.0,
+    )
+
+    finding = result.vulnerabilities[0]
+
+    assert finding.risk_score == 9.0
+    assert finding.remediation_guidance == (
+        "Address immediately; prioritize a fix or mitigation."
+    )
